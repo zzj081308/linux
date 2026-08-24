@@ -393,6 +393,135 @@ else
 	echo "str1为空"
 fi
 echo ---------------------------------------------------------
+#文件测试运算符
+
+#-b块文件
+file="/dev/sda1"
+if [[ -b $file ]]
+then
+	echo "${file}是块文件"
+fi
+
+file="/root/my_shell"
+if [[ -d $file ]]
+then
+	echo "$file是目录"
+fi
+
+file="/root/my_shell/test.sh"
+if [[ -f $file ]]
+then
+	echo "$file是普通文件"
+fi
+
+if [[ -r $file ]]
+then
+	echo "$file可读"
+else
+	echo "$file不可读"
+fi
+
+if [[ -w $file ]]
+then
+	echo "$file可写"
+else
+	echo "$file不可写"
+fi
+
+if [[ -x $file ]]
+then
+	echo "$file可执行"
+else
+	echo "$file不可执行"
+fi
+
+if [[ -s $file ]]
+then 
+	echo "$file不为空"
+else
+	echo "$file为空"
+fi
+
+if [[ -e $file ]]
+then
+	echo "$file存在"
+else
+	echo "$file不存在"
+fi
+echo ---------------------------------------------------------
+#expr
+#返回运算值
+echo "expr返回运算结果: `expr 1 + 2`"
+
+#返回字符串长度
+echo "expr返回字符串长度:`expr length "zzj123"`"
+
+#截取字符串
+# expr sunstr 字符串 起始位 截取长度
+echo "expr截取字符串:`expr substr "zzj123" 2 4`"
+
+#字符串查找字符
+echo "expr查找字符串j位置:`expr index "zzj123" 'j' `"
+
+#正则表达式
+# expr match 字符串 正则表达式
+# expr 字符串 : 正则表达式
+echo "正则表达式统计1之前的字符数:`expr match "zzj123" ".*1" `"
+echo ---------------------------------------------------------
+#(())符号应用
+#用于表达式计算和赋值,会自动解析变量,不用加$
+((a=1+2))
+((b=a+1))
+echo "(())计算结果:a=$a , b=$b" 
+a=$((1+3))
+b=$((a+1))
+echo "(())计算结果:a=$a , b=$b"
+#连写
+((a=1+5, b=a+2))
+echo "连写(()): a=$a , b=$b"
+#还可以写逻辑表达式
+if ((a < 0))
+then
+	echo "a < 0"
+else
+	echo "a >= 0"
+fi
+echo ---------------------------------------------------------
+#let
+#和(())差不多，但仅用于赋值
+let a=1+2
+let b=a+1
+echo "let方法输出: a=$a , b=$b"
+let a=3 b=a+2
+echo "连写let输出: a=$a , b=$b"
+echo ---------------------------------------------------------
+# $[]使用
+# 这个不能赋值，只能计算
+a=$[1+6]
+b=$[a+1]
+echo "$ []输出:a=$a , b=$b"
+echo ---------------------------------------------------------
+# bc命令
+
+#先创建个文件
+touch task.txt
+#往里面写一点算式
+echo -e "108*67+12345\n58+2007*11" > task.txt
+echo -e "bc计算结果:"
+# -q 不显示bc界面提示信息
+bc -q task.txt
+# quit 是退出bc, bc是交互式界面
+# scale 指定保留几位小数
+# ibase 指定输入进制
+# obase 指定输出进制
+# last 获取上一次的结果
+# -l 内置标准数学库
+# s()	sin()函数
+# c()	cos()函数
+# a()	arctan()函数
+# l() 	ln()函数
+# e()	e^x函数
+# j(n, x)	计算从n到x的阶数
 
 
 #
