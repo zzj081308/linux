@@ -671,7 +671,36 @@ myfun()
 myfun "zzj1" "zzj2"
 echo "输出返回值:$?"
 echo ---------------------------------------------------------
-
-
+# 输出重定向, 终端->文件
+echo "这是log:" > log.txt
+echo "查看输出重定向:"
+cat log.txt
+# 将错误信息输出到文件,加一个2,正确的是1,错误的是2,默认2不输出
+# 随便写一个错的命令
+ls 666
+echo -e "\n追加写入错误信息"
+ls 666 2>> log.txt
+cat log.txt
+# 如果想正确错误都输出: ls 666 >> log.txt 2>&1
+echo ---------------------------------------------------------
+# 先看wc命令
+# wc命令可以统计文本
+wc log.txt
+echo "输出表示2行 5单词 63字节 文件名log.txt"
+# 可以加选项-l只统计行数, -w单词数, -c字节数
+# 输入重定向 文件->终端
+echo  "输入重定向:"
+wc -l < log.txt
+# 按行读取文件内容:
+echo "按行读取文件内容:"
+echo "test1" >> log.txt
+echo "test2" >> log.txt
+echo "test3" >> log.txt
+line=1
+while read str;
+do
+	echo "第${line}行:${str}"
+	let line++
+done< log.txt
 
 #
