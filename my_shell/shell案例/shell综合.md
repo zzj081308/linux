@@ -242,3 +242,164 @@ done
 ![](pic/Snipaste_2026-09-02_19-11-27.png)
 
 ## 八、批量创建用户
+
+根据test.txt中提供的用户名批量创建用户
+
+```shell
+#!/bin/bash
+# 批量创建用户
+cat > test.txt << EOF
+user1
+user2
+EOF
+```
+
+添加用户命令
+
+```shell
+useradd 用户名
+```
+
+给用户设置密码
+
+```shell
+echo "密码" | passwd -stdin user1
+```
+
+删除用户以及主目录
+
+```shell
+userdel -r 用户名
+```
+
+```shell
+#!/bin/bash
+# 批量创建用户
+cat > test.txt << EOF
+user1
+user2
+EOF
+
+# 创建用户列表
+ULIST=$(cat /root/my_shell/test.txt)
+for UNAME in $ULIST
+do
+        useradd $UNAME
+        echo "Hmh12345678@" | passwd --stdin $UNAME
+        if [[ $? == 0 ]]
+        then
+                echo "执行$UNAME成功"
+        else
+                echo "执行$UNAME失败"
+        fi
+done
+
+```
+
+![](pic/Snipaste_2026-09-03_11-55-23.png)
+
+![](pic/Snipaste_2026-09-03_11-57-29.png)
+
+## 九、筛选单词
+
+数据准备test.txt
+
+筛选出长度大于3的单词
+
+```shell
+#!/bin/bash
+# 单词筛选
+cat > test.txt << EOF
+I may not be able to change the past, but I can learn from it.
+EOF
+
+```
+
+awk指定分隔符为：空格，.
+
+```shell
+#!/bin/bash
+# 单词筛选
+cat > test.txt << EOF
+I may not be able to change the past, but I can learn from it.
+EOF
+
+awk -F "[ ,.]" '{for(i=1;i<=NF;i++){if(length($i)>3)print $i}}' test.txt
+
+```
+
+![](pic/Snipaste_2026-09-03_12-09-21.png)
+
+## 十、单词字母去重排序
+
+```shell
+#!/bin/bash
+# 单词筛选
+cat > test.txt << EOF
+No. The Bible says Jesus had compassion2 on them for He saw them as sheep without a shepherd. They were like lost sheep, lost in their sin. How the Lord Jesus loved them! He knew they were helpless and needed a shepherd. And the Good Shepherd knew He had come to help them. But not just the people way back then. For the Lord Jesus knows all about you, and loves you too, and wants to help you.
+EOF
+```
+
+对单词进行统计
+
+用一个关联数组S[$i]++进行统计
+
+```shell
+{for(i=1;i<=NF;i++){S[$i]++}}'
+```
+
+```shell
+awk -F "[ ,.!]" '{for(i=1;i<=NF;i++){S[$i]++}}END{for(key in S){printf("%s %s\n", key, S[key])}}' test.txt | sort -t " " -k2,2rn
+```
+
+```shell
+#!/bin/bash
+# 单词筛选
+cat > test.txt << EOF
+No. The Bible says Jesus had compassion2 on them for He saw them as sheep without a shepherd. They were like lost sheep, lost in their sin. How the Lord Jesus loved them! He knew they were helpless and needed a shepherd. And the Good Shepherd knew He had come to help them. But not just the people way back then. For the Lord Jesus knows all about you, and loves you too, and wants to help you.
+EOF
+
+awk -F "[ ,.!]" '{for(i=1;i<=NF;i++){S[$i]++}}END{for(key in S){printf("%s %s\n", key, S[key])}}' test.txt | sort -t " " -k2,2rn
+
+```
+
+![](pic/Snipaste_2026-09-03_12-31-48.png)
+
+如果要按字母分，把分隔符删掉就行
+
+```shell
+awk -F "" '{for(i=1;i<=NF;i++){S[$i]++}}END{for(key in S){printf("%s %s\n", key, S[key])}}' test.txt | sort -t " " -k2,2rn
+```
+
+![](pic/Snipaste_2026-09-03_12-36-09.png)
+
+## 十一、扫描网络内存活的主机
+
+ping一下我的网卡
+
+![](pic/Snipaste_2026-09-03_12-49-40.png)
+
+发两个包只要接收到一个就算存活
+
+```shell
+#!/bin/bash
+# 检测网络内存活的主机
+count=0
+for i in 192.168.253.{1..254}
+do
+        num=$(ping -c 2 $i | awk -F " " 'NR==6{printf("%s", $5)}')
+        if (( num > 0 ))
+        then
+                echo "$i存活"
+        else
+                echo "$i不在线"
+        fi
+done
+
+```
+
+![](pic/Snipaste_2026-09-03_12-59-47.png)
+
+![](pic/Snipaste_2026-09-03_13-00-36.png)
+
+可见192.168.253.135确实在线
