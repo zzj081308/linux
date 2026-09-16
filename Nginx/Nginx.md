@@ -60,7 +60,25 @@ sudo yum install yum-utils
 vim /etc/yum.repos.d/nginx.repo
 ```
 
-![](pic/Snipaste_2026-08-16_12-42-00.png)
+![](pic/Snipaste_2026-09-16_20-18-59.png)
+
+```
+[nginx-stable]
+name=nginx stable repo
+baseurl=https://nginx.org/packages/centos/$releasever/$basearch/
+gpgcheck=1
+enabled=1
+gpgkey=https://nginx.org/keys/nginx_signing.key
+module_hotfixes=true
+
+[nginx-mainline]
+name=nginx mainline repo
+baseurl=https://nginx.org/packages/mainline/centos/$releasever/$basearch/
+gpgcheck=1
+enabled=0
+gpgkey=https://nginx.org/keys/nginx_signing.key
+module_hotfixes=true
+```
 
 保存退出
 

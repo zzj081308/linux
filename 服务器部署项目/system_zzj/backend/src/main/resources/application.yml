@@ -1,0 +1,34 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: web-demo
+
+  datasource:
+    # 所有 ${环境变量:默认值} 都可以在启动时用环境变量覆盖，服务器上不用改代码
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:demo_db}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:123456}
+
+  jpa:
+    hibernate:
+      # 练习用：自动根据实体建表/更新表结构。生产环境一般改成 validate 或 none + 迁移工具
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      # 空密码表示不认证（本机/练习环境）
+      password: ${REDIS_PASSWORD:}
+      timeout: 3s
+
+logging:
+  level:
+    # 打印实际执行的 SQL，方便观察 MySQL 交互
+    org.hibernate.SQL: debug
