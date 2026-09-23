@@ -43,7 +43,7 @@ CentOS 10基于Red Hat，选择10版本，里面有MySQL8.4和MySQL9.7
 添加刚才复制的官方源
 
 ```shell
-yum -y install https://dev.mysql.com/get/mysql97-community-release-el10-1.noarch.rpm
+dnf -y install https://dev.mysql.com/get/mysql97-community-release-el10-1.noarch.rpm
 ```
 
 ![](pic/Snipaste_2026-08-09_17-38-44.png)
@@ -51,7 +51,7 @@ yum -y install https://dev.mysql.com/get/mysql97-community-release-el10-1.noarch
 查看官方源是否启用
 
 ```shell
-yum repolist enabled | grep mysql
+dnf repolist enabled | grep mysql
 ```
 
 ![](pic/Snipaste_2026-08-09_17-40-47.png)
@@ -67,7 +67,7 @@ yum repolist enabled | grep mysql
 ### 开始安装MySQL服务
 
 ```shell
-yum -y install mysql-community-server
+dnf -y install mysql-community-server
 ```
 
 结果发现有错误
@@ -82,7 +82,7 @@ CentOS Stream 10 自带的 **MariaDB 11.8**（AppStream 仓库里的 `mariadb11.
 依赖解析时，MariaDB 服务器（`mariadb11.8-server` 等）被当作 MySQL 9.7 的**弱依赖（weak dependency）**拉进来，两边提供相同的命令和文件，导致冲突；`mariadb-connector-c` 只是连接库，本身不冲突。装的时候关掉弱依赖就行：
 
 ```shell
-yum -y install mysql-community-server --setopt=install_weak_deps=False
+dnf -y install mysql-community-server --setopt=install_weak_deps=False
 ```
 
 --setopt=install_weak_deps=False
