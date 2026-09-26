@@ -38,7 +38,7 @@ vim nginx.repo
 
 ![](pic/Snipaste_2026-08-16_12-35-43.png)
 
-是预购建软件包，点进去
+是预构建软件包，点进去
 
 ![](pic/Snipaste_2026-08-16_12-37-22.png)
 
@@ -47,7 +47,7 @@ vim nginx.repo
 原来还要安装个组件
 
 ```
-sudo yum install yum-utils
+yum install yum-utils
 ```
 
 ![](pic/Snipaste_2026-08-16_12-40-05.png)
@@ -84,7 +84,7 @@ module_hotfixes=true
 
 ## 开始安装
 
-然后就可以之间安装了
+然后就可以直接安装了
 
 ```shell
 yum install -y nginx
