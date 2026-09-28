@@ -392,6 +392,71 @@ systemctl start nginx
 
 ![](pic/Snipaste_2026-09-27_00-03-26.png)
 
+## 实例三
+
+放一个vue项目到nginx
+
+现已有vue项目：vue-demo.zip
+
+放到服务器里
+
+### 解压项目
+
+zip很好解压了
+
+```shell
+unzip vue-demo.zip
+```
+
+![](pic/Snipaste_2026-09-28_15-49-02.png)
+
+在`/usr/share/nginx/html/`创建一个文件夹放前端文件,把项目下dist全部移动进去
+
+```shell
+mkdir /usr/share/nginx/html/zzj
+cp -r vue-demo/dist/* /usr/share/nginx/html/zzj/
+```
+
+![](pic/Snipaste_2026-09-28_15-52-31.png)
+
+修改nginx配置文件
+
+先备份原有的文件
+
+```shell
+ cd /etc/nginx/conf.d/
+ mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.bak
+ vim vue-demo.conf
+```
+
+![](pic/Snipaste_2026-09-28_16-03-30.png)
+
+写下以下配置
+
+```nginx
+server{
+	listen 80;
+    server_name 192.168.253.135;
+    
+    root /usr/share/nginx/html/zzj;
+    index index.html;
+    
+    location / {
+        try_files $uri $uri/ /index.html
+    }
+}
+```
+
+重启nginx
+
+```shell
+nginx -t && systemctl reload nginx
+```
+
+访问192.168.253.135
+
+![](pic/Snipaste_2026-09-28_16-07-37.png)
+
 ## 额外配置
 
 现在修一下乱码
