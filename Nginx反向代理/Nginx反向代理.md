@@ -419,7 +419,7 @@ cp -r vue-demo/dist/* /usr/share/nginx/html/zzj/
 
 ![](pic/Snipaste_2026-09-28_15-52-31.png)
 
-修改nginx配置文件
+### 修改nginx配置文件
 
 先备份原有的文件
 
