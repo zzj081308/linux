@@ -126,7 +126,7 @@ dnf clean all
 
 ![](pic/Snipaste_2026-10-05_14-07-40.png)
 
-安装server、Web UI、agent
+### 安装server、Web UI、agent
 
 ```shell
 dnf install zabbix-server-mysql zabbix-web-mysql zabbix-nginx-conf zabbix-sql-scripts zabbix-selinux-policy zabbix-agent
@@ -157,7 +157,7 @@ quit;
 
 设置密码要含有大小写加符号
 
-此处的用户将用于前端登录
+此处的用户将用于前端用户注册登录
 
 ![](pic/Snipaste_2026-10-05_15-44-34.png)
 
@@ -260,3 +260,231 @@ systemctl enable zabbix-server zabbix-agent nginx php-fpm
 ![](pic/Snipaste_2026-10-05_16-44-18.png)
 
 我去太帅了
+
+## 部署agent
+
+被监控的服务器只需要单装一个agent就行
+
+![](pic/Snipaste_2026-10-09_16-25-09.png)
+
+安装也就一点点
+
+### 安装仓库
+
+还是安装zabbix仓库，清除缓存
+
+```shell
+rpm -Uvh https://repo.zabbix.com/zabbix/7.4/release/centos/10/noarch/zabbix-release-latest-7.4.el10.noarch.rpm
+dnf clean all
+```
+
+![](pic/Snipaste_2026-10-09_16-28-39.png)
+
+### 安装agent
+
+```shell
+dnf install zabbix-agent
+```
+
+![](pic/Snipaste_2026-10-09_16-31-05.png)
+
+### 修改配置文件
+
+把zabbix配置文件的server改为server服务器的ip：192.168.40.128
+
+```shell
+vim /etc/zabbix/zabbix_agentd.conf
+```
+
+第117行
+
+![](pic/Snipaste_2026-10-09_16-49-55.png)
+
+Server Active也改为：192.168.40.128
+
+Hostname改为：CentOS_2
+
+分别在173和184行
+
+![](pic/Snipaste_2026-10-09_16-53-28.png)
+
+### 启动服务
+
+```shell
+systemctl restart zabbix-agent
+systemctl enable zabbix-agent
+```
+
+![](pic/Snipaste_2026-10-09_16-32-27.png)
+
+### 添加被监控主机
+
+回到监控前端界面
+
+左侧栏点击“数据采集”、“主机”，然后右上角“创建主机”
+
+![](pic/Snipaste_2026-10-09_16-34-46.png)
+
+输入被监控的主机名
+
+主机群组选Linux servers
+
+添加一个Agent接口，输入ip
+
+点击“添加”
+
+![](pic/Snipaste_2026-10-09_16-37-15.png)
+
+### 防火墙放行
+
+这里的端口是10050需要在防火墙放行一下
+
+```shell
+firewall-cmd --add-port=10050/tcp --permanent && firewall-cmd --reload
+```
+
+![](pic/Snipaste_2026-10-09_16-44-21.png)
+
+刚才添加主机忘了绑定模板了
+
+回去在模板栏输入:Linux by zabbix agent
+
+然后更新一下
+
+![](pic/Snipaste_2026-10-09_17-00-08.png)
+
+现在CentOS_2的可用性变成绿色，就是可用了
+
+![](pic/Snipaste_2026-10-09_17-02-52.png)
+
+仪表盘也可见
+
+![](pic/Snipaste_2026-10-09_17-05-33.png)
+
+### 添加监控项
+
+![](pic/Snipaste_2026-10-09_17-26-22.png)
+
+监控一下cpu
+
+起个名字叫cpu使用百分比
+
+键值选system.cpu.util
+
+单位标识：%
+
+更新间隔选3s更快
+
+键值有四个参数
+
+键值的参数参见官方文档：https://www.zabbix.com/documentation/7.4/zh/manual/config/items/itemtypes/zabbix_agent#system.cpu.util
+
+![](pic/Snipaste_2026-10-09_17-32-35.png)
+
+偷个懒全部用默认值
+
+```
+system.cpu.util[all, , ]
+```
+
+更新一下
+
+![](pic/Snipaste_2026-10-09_17-35-21.png)
+
+添加完发现监控项为“不支持”
+
+![](pic/Snipaste_2026-10-09_17-43-43.png)
+
+装的是传统 agent(zabbix-agent,agent 1),它只吃 3 个参数;你看到的第 4 个 <logical_or_physical> 是 agent 2 的扩展。所以在被监控机上写成 4 个参数,监控项会直接变成"不支持"。
+
+删一个参数就行
+
+```
+system.cpu.util[all,]
+```
+
+现在去查看监控项
+
+左侧栏：监控、最新数据
+
+选一个主机群组：Linux servers
+
+应用
+
+![](pic/Snipaste_2026-10-09_17-46-22.png)
+
+就可以找到刚才的监控项，还可以查看图形
+
+![](pic/Snipaste_2026-10-09_17-48-10.png)
+
+![](pic/Snipaste_2026-10-09_17-57-53.png)
+
+## 压力测试
+
+下面有个cpu压力测试脚本：cpu_test.sh
+
+```shell
+#!/bin/bash
+# cpu_test.sh —— 临时 CPU 压测,用来验证 Zabbix 采集和告警
+# 用法: ./cpu_test.sh [秒数] [进程数]
+#   ./cpu_test.sh            # 默认压满所有核心,持续 180 秒
+#   ./cpu_test.sh 300 2      # 只压 2 个核心,持续 300 秒
+
+set -u
+DURATION=${1:-180}
+WORKERS=${2:-$(nproc)}
+
+echo "开始压测:${WORKERS} 个进程 × ${DURATION} 秒(本机共 $(nproc) 核)"
+
+pids=()
+cleanup() {
+    for p in "${pids[@]}"; do kill "$p" 2>/dev/null; done
+    echo "压测结束,已全部停止"
+}
+trap cleanup EXIT INT TERM
+
+for _ in $(seq 1 "$WORKERS"); do
+    yes > /dev/null &
+    pids+=($!)
+done
+
+sleep "$DURATION"
+```
+
+```
+sh cpu_test.sh
+```
+
+在top里看cpu已经爆到100了
+
+![](pic/Snipaste_2026-10-09_17-59-48.png)
+
+再去zabbix看
+
+欸，最高只到了25左右
+
+![](pic/Snipaste_2026-10-09_18-04-38.png)
+
+其实是键值只取 `user` 模式 `system.cpu.util[all, ]` 的第二个参数是 `type`,你留空了 → 默认 `user`,只统计用户态。内核态、中断那些都不算。
+
+把监控项键值改成不带任何参数:
+
+```
+system.cpu.util
+```
+
+改一下又发现
+
+![](pic/Snipaste_2026-10-09_18-07-57.png)
+
+被用过了，默认就有这个键值
+
+![](pic/Snipaste_2026-10-09_18-09-24.png)
+
+就在上面的CPU utilization
+
+所以直接看这个监控项
+
+![](pic/Snipaste_2026-10-09_18-10-39.png)
+
+嗯，确实到100了
