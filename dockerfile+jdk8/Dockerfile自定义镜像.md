@@ -107,7 +107,7 @@ docker images
 
 运行容器
 
-![](C:\Users\27891\Desktop\运维\安装部署文档\dockerfile+jdk8\pic\Snipaste_2026-11-19_17-29-59.png)
+![](pic/Snipaste_2026-11-19_17-29-59.png)
 
 
 
