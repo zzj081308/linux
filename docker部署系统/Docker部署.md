@@ -573,4 +573,154 @@ networks:
 
 ## 补充redis
 
-未完待续...
+redis配置已经写在后端了，根据后端的配置写环境变量
+
+![](pic/Snipaste_2026-11-27_01-32-30.png)
+
+三个变量：REDIS_HOST、REDIS_PORT、REDIS_PASSWORD，密码暂时不用
+
+这里是写在java内
+
+```yaml
+name: myapp
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:9.7.4
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - /root/system_zzj/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro,z
+    networks:
+      - myapp-network
+  
+  java:
+    container_name: java
+    build:
+      context: ./system_zzj/backend
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - myapp-network
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=demo_db
+      - DB_USER=demo_user
+      - DB_PASSWORD=Demo@123456
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    image: zzj_backend:1.0
+    depends_on:
+      - mysql
+
+  nginx:
+    container_name: nginx
+    image: nginx:stable-alpine3.24
+    ports:
+      - 80:80
+    networks:
+      - myapp-network
+    volumes:
+      - ./system_zzj/frontend/dist:/usr/share/nginx/html:ro
+      - ./system_zzj/deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - java
+
+volumes:
+  mysql-data: 
+
+networks:
+  myapp-network:
+```
+
+redis服务里只需要简单写个镜像和网络，然后java也需要依赖redis
+
+```yaml
+name: myapp
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:9.7.4
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - /root/system_zzj/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro,z
+    networks:
+      - myapp-network
+  
+  java:
+    container_name: java
+    build:
+      context: ./system_zzj/backend
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - myapp-network
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=demo_db
+      - DB_USER=demo_user
+      - DB_PASSWORD=Demo@123456
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    image: zzj_backend:1.0
+    depends_on:
+      - mysql
+      - redis
+
+  nginx:
+    container_name: nginx
+    image: nginx:stable-alpine3.24
+    ports:
+      - 80:80
+    networks:
+      - myapp-network
+    volumes:
+      - ./system_zzj/frontend/dist:/usr/share/nginx/html:ro
+      - ./system_zzj/deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - java
+    
+  redis:
+    container_name: redis
+    image: redis:latest
+    networks:
+      - myapp-network
+
+volumes:
+  mysql-data: 
+
+networks:
+  myapp-network:
+```
+
+配置完了就启动！
+
+```shell
+docker compose up -d
+docker ps -a
+```
+
+![](pic/Snipaste_2026-11-27_01-44-39.png)
+
+很好，容器都起来了
+
+### 验证
+
+访问服务器
+
+![](pic/Snipaste_2026-11-27_01-45-40.png)
+
+完美
